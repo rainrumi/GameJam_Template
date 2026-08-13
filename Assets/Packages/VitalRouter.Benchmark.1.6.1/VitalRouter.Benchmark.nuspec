@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>VitalRouter.Benchmark</id>
+    <version>1.6.1</version>
+    <authors>hadashiA</authors>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <projectUrl>https://github.com/hadashiA/VitalRouter</projectUrl>
+    <description>The zero-allocation in-memory message passing library. The very thin layer that encourages decrative routings.</description>
+    <repository type="git" url="https://github.com/hadashiA/VitalRouter" commit="5e51d820f6c9ee98eb6bd366a5442ffe2685b809" />
+    <dependencies>
+      <group targetFramework="net8.0">
+        <dependency id="VitalRouter" version="1.6.1" exclude="Build,Analyzers" />
+        <dependency id="BenchmarkDotNet" version="0.14.0" exclude="Build,Analyzers" />
+        <dependency id="JetBrains.Profiler.Api" version="1.4.8" exclude="Build,Analyzers" />
+        <dependency id="MediatR" version="12.4.1" exclude="Build,Analyzers" />
+        <dependency id="MessagePipe" version="1.8.1" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.DependencyInjection" version="8.0.1" exclude="Build,Analyzers" />
+        <dependency id="Prism.Core" version="9.0.537" exclude="Build,Analyzers" />
+        <dependency id="PubSub" version="4.0.2" exclude="Build,Analyzers" />
+        <dependency id="R3" version="1.2.9" exclude="Build,Analyzers" />
+        <dependency id="System.Reactive" version="6.0.1" exclude="Build,Analyzers" />
+        <dependency id="ZeroMessenger" version="1.0.1" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

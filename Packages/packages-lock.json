@@ -9,6 +9,13 @@
       },
       "hash": "70937d2ce39b61c29c4feb4d13642c65bb553d6c"
     },
+    "com.cysharp.unitask": {
+      "version": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "ceac8d6946b1125fe782cd171fbcb245b567dbf9"
+    },
     "com.github-glitchenzo.nugetforunity": {
       "version": "https://github.com/GlitchEnzo/NuGetForUnity.git?path=/src/NuGetForUnity",
       "depth": 0,
@@ -343,6 +350,13 @@
         "com.unity.modules.jsonserialize": "1.0.0"
       },
       "url": "https://packages.unity.com"
+    },
+    "jp.hadashikick.vitalrouter.unity": {
+      "version": "https://github.com/hadashiA/VitalRouter.git?path=/src/VitalRouter.Unity/Assets/VitalRouter#2.8.0",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "dd8327b80814bc53e9baf603e2d3463a7d21ed52"
     },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",
