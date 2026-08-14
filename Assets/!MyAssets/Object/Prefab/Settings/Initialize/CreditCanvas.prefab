@@ -90,7 +90,6 @@ GameObject:
   - component: {fileID: 7379280950803683093}
   - component: {fileID: 4709592898340224858}
   - component: {fileID: 8885561862554805868}
-  - component: {fileID: 3511712399372983600}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -145,10 +144,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "BGM\uFF1A\n\u512A\u3057\u304F\u306A\u308C\u305F\u3089 / \u304B\u307E\u307C\u3053\u3055\u3061\u3053\n\nSE\u3044\u308D\u3044\u308D\uFF1A\nDOVA-SYNDROME\u3088\u308A"
+  m_text: text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 82e8377037d307c43b7fe52a3d138f90, type: 2}
-  m_sharedMaterial: {fileID: -3121352222580684170, guid: 82e8377037d307c43b7fe52a3d138f90, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -217,21 +216,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &3511712399372983600
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1573383593606638347}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 08802ff3d96f3384e8a5edd36fbeeb02, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RaruLib.LineBoilTMP
-  amount: 0.02
-  factor: 0.05
-  fps: 10
 --- !u!1 &1747949565474890900
 GameObject:
   m_ObjectHideFlags: 0
@@ -388,7 +372,6 @@ GameObject:
   - component: {fileID: 877265139030960342}
   - component: {fileID: 56981769977814730}
   - component: {fileID: 5127756822830211842}
-  - component: {fileID: 6700438088500214955}
   m_Layer: 5
   m_Name: Text (TMP) (1)
   m_TagString: Untagged
@@ -443,11 +426,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u4F7F\u7528\u30D5\u30A9\u30F3\u30C8\uFF1A\n\u3086\u306A\u5B57\uFF08YuNa
-    FONT\uFF09 / FataMorgana"
+  m_text: text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 82e8377037d307c43b7fe52a3d138f90, type: 2}
-  m_sharedMaterial: {fileID: -3121352222580684170, guid: 82e8377037d307c43b7fe52a3d138f90, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -516,21 +498,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &6700438088500214955
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4640715609437260068}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 08802ff3d96f3384e8a5edd36fbeeb02, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RaruLib.LineBoilTMP
-  amount: 0.02
-  factor: 0.05
-  fps: 10
 --- !u!1 &5221025890773509905
 GameObject:
   m_ObjectHideFlags: 0
@@ -559,7 +526,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5221025890773509905}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 90}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -637,7 +604,6 @@ GameObject:
   - component: {fileID: 3638170046992029308}
   - component: {fileID: 3684236339739978558}
   - component: {fileID: 247265245043314313}
-  - component: {fileID: 1390020866377208145}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -694,8 +660,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Credit
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 82e8377037d307c43b7fe52a3d138f90, type: 2}
-  m_sharedMaterial: {fileID: -3121352222580684170, guid: 82e8377037d307c43b7fe52a3d138f90, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -764,21 +730,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &1390020866377208145
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7233515217944014289}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 08802ff3d96f3384e8a5edd36fbeeb02, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RaruLib.LineBoilTMP
-  amount: 0.05
-  factor: 0.03
-  fps: 10
 --- !u!1 &8571837300625866958
 GameObject:
   m_ObjectHideFlags: 0
@@ -996,12 +947,14 @@ PrefabInstance:
       objectReference: {fileID: -7522824662845198398, guid: 7838124798729374bb5f0132905b026f, type: 3}
     - target: {fileID: 6391226713116255685, guid: d8b49446598b4834886fc4609c170a1e, type: 3}
       propertyPath: m_text
-      value: "kiralumirr\n\u30A4\u30E9\u30B9\u30C8\n\u30D7\u30ED\u30B0\u30E9\u30E0"
+      value: 'Name
+
+        Job'
       objectReference: {fileID: 0}
     - target: {fileID: 6391226713116255685, guid: d8b49446598b4834886fc4609c170a1e, type: 3}
       propertyPath: m_fontAsset
       value: 
-      objectReference: {fileID: 11400000, guid: 82e8377037d307c43b7fe52a3d138f90, type: 2}
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 6391226713116255685, guid: d8b49446598b4834886fc4609c170a1e, type: 3}
       propertyPath: m_fontColor.b
       value: 1
@@ -1017,7 +970,7 @@ PrefabInstance:
     - target: {fileID: 6391226713116255685, guid: d8b49446598b4834886fc4609c170a1e, type: 3}
       propertyPath: m_sharedMaterial
       value: 
-      objectReference: {fileID: -3121352222580684170, guid: 82e8377037d307c43b7fe52a3d138f90, type: 2}
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 6391226713116255685, guid: d8b49446598b4834886fc4609c170a1e, type: 3}
       propertyPath: m_fontColor32.rgba
       value: 4294967295
@@ -1045,31 +998,8 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 9181601052964275027, guid: d8b49446598b4834886fc4609c170a1e, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1347867540785793543}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d8b49446598b4834886fc4609c170a1e, type: 3}
---- !u!1 &1972145261270612876 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 9181601052964275027, guid: d8b49446598b4834886fc4609c170a1e, type: 3}
-  m_PrefabInstance: {fileID: 7220939434748344543}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1347867540785793543
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1972145261270612876}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 08802ff3d96f3384e8a5edd36fbeeb02, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RaruLib.LineBoilTMP
-  amount: 0.05
-  factor: 0.03
-  fps: 10
 --- !u!224 &9167854373867514089 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1949826446984384566, guid: d8b49446598b4834886fc4609c170a1e, type: 3}
