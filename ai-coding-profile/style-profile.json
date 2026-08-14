@@ -1,0 +1,226 @@
+{
+  "$schema": "./style-profile.schema.json",
+  "profileVersion": 1,
+  "project": "NuiIndicator",
+  "language": "C#",
+  "interpretationMode": "strict_author_style_replication",
+  "assumptionPolicy": "Treat recorded rules as true author intent until contradicted by nearer project evidence.",
+  "snapshot": {
+    "date": "2026-08-14",
+    "unityVersion": "6000.3.12f1",
+    "primaryRoots": [
+      "Assets/!lumirr/scripts",
+      "Assets/!lumirr/RaruLib/src",
+      "Assets/Editor"
+    ],
+    "observed": {
+      "gameFiles": 128,
+      "gameLines": 5021,
+      "raruLibFiles": 45,
+      "raruLibLines": 2107,
+      "testFiles": 13,
+      "testLines": 2172,
+      "serializeFieldOccurrencesInGame": 177,
+      "gameNamespaceDeclarations": 0,
+      "raruLibBlockNamespaceDeclarations": 40,
+      "fileScopedNamespaceDeclarations": 0,
+      "gameXmlSummaryOccurrences": 42,
+      "gameJapaneseCommentOccurrences": 292,
+      "gameVarLocalOccurrences": 5,
+      "gameExplicitLocalDeclarationOccurrences": 422
+    }
+  },
+  "priority": [
+    "nearest_existing_feature",
+    "Assets/!lumirr/scripts conventions",
+    "this_profile",
+    "Assets/!lumirr/RaruLib/src legacy conventions"
+  ],
+  "architecture": {
+    "default": "MVP",
+    "compositionRoot": "VContainer LifetimeScope",
+    "rules": [
+      {
+        "id": "arch.model",
+        "strength": "required",
+        "confidence": "high",
+        "instruction": "Put mutable state, calculation and game rules in a constructor-injected non-MonoBehaviour Model."
+      },
+      {
+        "id": "arch.view",
+        "strength": "required",
+        "confidence": "high",
+        "instruction": "Put Inspector references and Unity API mutations in a MonoBehaviour View."
+      },
+      {
+        "id": "arch.presenter",
+        "strength": "required",
+        "confidence": "high",
+        "instruction": "Connect Model and View in a constructor-injected Presenter; use IStartable and ITickable for VContainer lifecycle."
+      },
+      {
+        "id": "arch.registration",
+        "strength": "required",
+        "confidence": "high",
+        "instruction": "Register Views with RegisterComponent, status assets with RegisterInstance, Models with Register<T>, and Presenters with RegisterEntryPoint."
+      }
+    ]
+  },
+  "dataDesign": {
+    "patterns": [
+      {
+        "name": "status_boundary",
+        "shape": "ScriptableObject *StatusInfo implements I*Status; Model depends on interface",
+        "strength": "required",
+        "confidence": "high"
+      },
+      {
+        "name": "runtime_status",
+        "shape": "Pure C# *RuntimeInitializeStatus implements the same status interface for runtime relocation/reset",
+        "strength": "preferred",
+        "confidence": "high"
+      },
+      {
+        "name": "mutable_data_snapshot",
+        "shape": "*Data stores mutable Model state; *DataPack exposes a get-only snapshot returned by GetDataPack()",
+        "strength": "required",
+        "confidence": "high"
+      },
+      {
+        "name": "math_boundary",
+        "shape": "System.Numerics.Vector2 in calculation layers; UnityEngine.Vector2/Vector3 in Views",
+        "strength": "preferred",
+        "confidence": "high"
+      },
+      {
+        "name": "reactive_notification",
+        "shape": "private readonly Subject<T>, public Observable<T>, CompositeDisposable ownership",
+        "strength": "preferred",
+        "confidence": "high"
+      }
+    ]
+  },
+  "async": {
+    "library": "UniTask",
+    "rules": [
+      "Suffix asynchronous methods with Async.",
+      "Accept CancellationToken on public asynchronous boundaries.",
+      "Link caller token with GetCancellationTokenOnDestroy in MonoBehaviour Views.",
+      "Treat expected OperationCanceledException as normal completion with a cancellation filter.",
+      "Restore temporary runtime state in finally.",
+      "Kill and link DOTween tweens to their GameObject lifetime."
+    ]
+  },
+  "naming": {
+    "types": "PascalCase",
+    "interfaces": "IPascalCase",
+    "privateFields": "_camelCase",
+    "protectedFields": "_camelCase",
+    "publicMembers": "PascalCase",
+    "localsAndParameters": "camelCase",
+    "booleanPrefixes": ["Is", "Can", "Has", "was", "is"],
+    "asyncSuffix": "Async",
+    "suffixVocabulary": [
+      "Model",
+      "Presenter",
+      "View",
+      "Data",
+      "DataPack",
+      "Status",
+      "StatusInfo",
+      "RuntimeInitializeStatus",
+      "Command",
+      "Signal",
+      "LifetimeScope",
+      "Kind"
+    ],
+    "preferredVerbs": [
+      "Apply",
+      "Change",
+      "Reset",
+      "Move",
+      "Play",
+      "Show",
+      "Hide",
+      "Visible",
+      "Disable",
+      "GetDataPack"
+    ],
+    "preserveOnlyVocabulary": [
+      "Scritable",
+      "scritableObjects",
+      "Aplly",
+      "Culculate",
+      "MaterDistance",
+      "Seacret",
+      "CanWachMap",
+      "CachedEndingWach",
+      "Searvis",
+      "pronpt",
+      "niavi",
+      "IplayableDataPack"
+    ]
+  },
+  "formatting": {
+    "indentSpaces": 4,
+    "braceStyle": "Allman",
+    "gameNamespace": null,
+    "raruLibNamespace": "RaruLib block namespace",
+    "fileScopedNamespaces": false,
+    "preferExplicitLocalTypes": true,
+    "allowTargetTypedNew": true,
+    "preferExpressionBodiedReadOnlyProperties": true,
+    "preferGuardClauses": true,
+    "regions": false,
+    "floatLiteralExamples": ["0.0f", "1.0f", "0.5f"]
+  },
+  "comments": {
+    "language": "Japanese",
+    "preserveEnglishFor": ["API names", "type names", "technical terms"],
+    "lineCommentStyle": "Short action or calculation-stage phrase immediately before the relevant statement.",
+    "xmlSummaryUse": "Public contracts, lifecycle ownership, non-obvious state changes and compatibility behavior.",
+    "avoid": [
+      "new mojibake",
+      "large commented-out implementations",
+      "bare TODO or FIXME",
+      "comments that merely restate assignment syntax"
+    ]
+  },
+  "testing": {
+    "framework": "NUnit / Unity Test Framework",
+    "namePattern": "Method_Condition_ExpectedResult",
+    "assertionStyle": "Assert.That",
+    "pureLogic": "EditMode Test",
+    "lifecycleAndDestroy": "UnityTest",
+    "testDoubles": "private sealed nested Stub implementing the production interface",
+    "unityCleanup": "try/finally and Object.DestroyImmediate",
+    "serializedReferenceSetup": ["SerializedObject", "small reflection helper when cross-cutting"]
+  },
+  "doNotIntroduce": [
+    "a second architecture beside existing MVP",
+    "runtime Find* as dependency injection",
+    "new global singleton or Manager without an existing local precedent",
+    "Coroutine where nearby code uses UniTask",
+    "C# events where nearby code uses R3",
+    "bulk rename of serialized fields, PlayerPrefs keys, enum members or compatibility typos",
+    "new namespace in Assets/!lumirr/scripts without a project-wide decision",
+    "file-scoped namespace",
+    "unrelated formatting"
+  ],
+  "evidenceFiles": [
+    "Assets/!lumirr/scripts/VContainer/GameLifetimeScope.cs",
+    "Assets/!lumirr/scripts/Playable/player/Movement/PlayerMovementModel.cs",
+    "Assets/!lumirr/scripts/Playable/player/Movement/PlayerMovementPresenter.cs",
+    "Assets/!lumirr/scripts/Playable/player/Movement/PlayerMovementView.cs",
+    "Assets/!lumirr/scripts/GameState/GameStateModel.cs",
+    "Assets/!lumirr/scripts/GameState/GameStatePresenter.cs",
+    "Assets/!lumirr/scripts/GameState/GameStateView.cs",
+    "Assets/!lumirr/scripts/Item/ItemModel.cs",
+    "Assets/!lumirr/scripts/Item/ItemPresenter.cs",
+    "Assets/!lumirr/scripts/Navi/NaviModel.cs",
+    "Assets/!lumirr/scripts/Novel/Runner/NovelRunner.cs",
+    "Assets/Editor/NaviModelTests.cs",
+    "Assets/Editor/AsyncCancellationTests.cs"
+  ],
+  "exemplarIndex": "./exemplars.json"
+}

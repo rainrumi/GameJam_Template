@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "project": "NuiIndicator",
+  "selectionRule": "Read the nearest matching exemplar before implementing; preserve its local API vocabulary and lifecycle.",
+  "exemplars": [
+    {
+      "topic": "composition_root",
+      "primary": "Assets/!lumirr/scripts/VContainer/GameLifetimeScope.cs",
+      "secondary": [
+        "Assets/!lumirr/scripts/VContainer/ObstaclesLifetimeScope.cs",
+        "Assets/!lumirr/scripts/VContainer/PlanetSpawnLifetimeScope.cs"
+      ],
+      "copy": [
+        "View / ScritableObject / Model / Presenter registration order",
+        "RegisterComponent and interface exposure",
+        "RegisterInstance for status assets",
+        "RegisterEntryPoint for presenters",
+        "Keyed registration for multiple instances"
+      ]
+    },
+    {
+      "topic": "mvp_runtime_loop",
+      "primary": "Assets/!lumirr/scripts/Playable/player/Movement/PlayerMovementPresenter.cs",
+      "secondary": [
+        "Assets/!lumirr/scripts/Playable/player/Movement/PlayerMovementModel.cs",
+        "Assets/!lumirr/scripts/Playable/player/Movement/PlayerMovementView.cs"
+      ],
+      "copy": [
+        "constructor injection",
+        "ITickable update bridge",
+        "Model calculation using System.Numerics",
+        "View-only Unity mutation",
+        "R3 subscription disposal"
+      ]
+    },
+    {
+      "topic": "reactive_state",
+      "primary": "Assets/!lumirr/scripts/GameState/GameStateModel.cs",
+      "secondary": [
+        "Assets/!lumirr/scripts/Item/ItemResetSignal.cs",
+        "Assets/!lumirr/scripts/Object/Spawn/ObjectSpawnControlModel.cs"
+      ],
+      "copy": [
+        "private Subject ownership",
+        "public Observable exposure",
+        "no notification for same state",
+        "IDisposable cleanup"
+      ]
+    },
+    {
+      "topic": "long_async_orchestration",
+      "primary": "Assets/!lumirr/scripts/GameState/GameStatePresenter.cs",
+      "secondary": [
+        "Assets/!lumirr/scripts/GameState/GameStateView.cs",
+        "Assets/!lumirr/scripts/Novel/Runner/NovelRunner.cs"
+      ],
+      "copy": [
+        "Japanese action comments",
+        "owned CancellationTokenSource replacement",
+        "linked cancellation",
+        "expected cancellation filters",
+        "finally-based runtime state restoration"
+      ]
+    },
+    {
+      "topic": "status_and_runtime_override",
+      "primary": "Assets/!lumirr/scripts/Playable/player/Scritable/PlayerInitializeStatusInfo.cs",
+      "secondary": [
+        "Assets/!lumirr/scripts/Playable/player/Interface/IPlayerInitializeStatus.cs",
+        "Assets/!lumirr/scripts/Playable/player/Movement/PlayerRuntimeInitializeStatus.cs"
+      ],
+      "copy": [
+        "ScriptableObject implements status interface",
+        "read-only expression-bodied properties",
+        "runtime Pure C# implementation of the same interface"
+      ]
+    },
+    {
+      "topic": "data_and_snapshot",
+      "primary": "Assets/!lumirr/scripts/Item/ItemModel.cs",
+      "secondary": [
+        "Assets/!lumirr/scripts/Navi/NaviModel.cs",
+        "Assets/!lumirr/scripts/Obstacles/Move/ObstaclesMovementModel.cs"
+      ],
+      "copy": [
+        "mutable Data",
+        "get-only DataPack",
+        "GetDataPack boundary",
+        "deterministic reset from seed and status"
+      ]
+    },
+    {
+      "topic": "view_async_lifetime",
+      "primary": "Assets/!lumirr/scripts/GameState/GameStateView.cs",
+      "secondary": [
+        "Assets/!lumirr/scripts/Result/ResultView.cs",
+        "Assets/!lumirr/scripts/Still/StillView.cs"
+      ],
+      "copy": [
+        "caller token linked to GameObject destroy token",
+        "DOTween kill and SetLink",
+        "CanvasGroup interaction state"
+      ]
+    },
+    {
+      "topic": "pure_csharp_test",
+      "primary": "Assets/Editor/NaviModelTests.cs",
+      "secondary": [
+        "Assets/Editor/HitObstaclesModelTests.cs",
+        "Assets/Editor/ItemResetTests.cs"
+      ],
+      "copy": [
+        "Method_Condition_ExpectedResult naming",
+        "Assert.That",
+        "private sealed nested stubs",
+        "explicit cleanup"
+      ]
+    },
+    {
+      "topic": "unity_lifetime_test",
+      "primary": "Assets/Editor/AsyncCancellationTests.cs",
+      "secondary": [
+        "Assets/Editor/PlayerMovementViewTests.cs",
+        "Assets/Editor/ResultViewTests.cs"
+      ],
+      "copy": [
+        "UnityTest for destroy-time behavior",
+        "SerializedObject or small reflection setup",
+        "try/finally GameObject cleanup",
+        "unexpected log verification"
+      ]
+    },
+    {
+      "topic": "legacy_rarulib_local_edit",
+      "primary": "Assets/!lumirr/RaruLib/src/UI/VFX/VisibleAnimation/UiViewAsync.cs",
+      "secondary": [
+        "Assets/!lumirr/RaruLib/src/Sound/SoundCommand.cs",
+        "Assets/!lumirr/RaruLib/src/Common/LoadScene/SceneLoad.cs"
+      ],
+      "copy": [
+        "RaruLib block namespace",
+        "existing serialized field vocabulary",
+        "local public API shape"
+      ],
+      "warning": "Preserve local legacy shape; do not use it as the default for new game code."
+    }
+  ]
+}
