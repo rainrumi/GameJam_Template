@@ -53,7 +53,19 @@ UnityCLI 版では、uLoop / LiminalPalette という特定製品への依存は
 
 この差分は意図的である。「先輩の書き方をコピー」ではなく、**execution contract を移植し、project-local implementation style は evidence から復元する**という設計。
 
-## 3. Unity CLI 固有の再編成
+## 3. 実装後レビューによる project-wide correction
+
+一ゲーム実装後の運用レビューから、既存 profile の模倣だけでは次の偏りが生じることが確認されたため、これらは古い exemplar より優先する correction とした。
+
+- **Prefab-first**: runtime に出現する gameplay object / interactive UI は `Assets/!MyAssets/Object/Prefab` の既存規則へ従う Prefab を source of truth にする。Prefab で解決できる authoring concern を Script で runtime repair しない。
+- **Instance-scoped MVP**: 同じ class は再利用してよいが、spawn された各 instance が独立した Model / Presenter state/lifetime を持つ。`GameLoop*` は game-wide orchestration へ限定する。
+- **Short comments**: class field は文末、method / local variable は行コメントとし、1〜15文字程度の日本語・英単語で役割を示す。
+- **No magic numbers**: gameplay/UI numeric value は対応 instance の `*Info` / 既存 `*StatusInfo` へ移し、production behavior code へ埋め込まない。
+- **Error/logging**: test 外 `InvalidOperationException` を禁止する。Model は return/no-op を使い、Unity-dependent code の `Debug.Log` は `UNITY_EDITOR` guard 内だけで使用する。
+
+この correction の目的は「より一般的な設計へ寄せる」ことではなく、実装後に観測された失敗モードを contract で再発防止することである。 Model の expected error については、旧 template の general fail-fast 方針より今回の return/no-op 方針を優先する。一方、Prefab/Inspector の required reference 不足は authoring failure として隠さない。
+
+## 4. Unity CLI 固有の再編成
 
 Unity CLI は次の 3 layer として扱う。
 
@@ -85,7 +97,7 @@ Unity CLI は次の 3 layer として扱う。
 
 Senior B の「検証作業が回帰資産を育てる」という思想は Layer C に移した。
 
-## 4. Safe Mode を execution contract に含めた理由
+## 5. Safe Mode を execution contract に含めた理由
 
 Unity Pipeline は normal package として load されるため、C# compile error で Editor が Safe Mode に入ると live command 接続が失われる。この状態で「Editor がいない」と誤判定すると、agent が Scene/Prefab raw file を blind edit する危険がある。
 
@@ -100,7 +112,7 @@ Unity Pipeline は normal package として load されるため、C# compile er
 
 これは UnityCLI 用 execution contract の重要な差分。
 
-## 5. `.system(1).zip` の扱い
+## 6. `.system(1).zip` の扱い
 
 提供された `.system(1).zip` を確認したところ、内容は `imagegen`, `openai-docs`, `review-agent`, `skill-creator`, `skill-installer` 等の general system skills で、`unity-cli/SKILL.md` 自体は含まれていなかった。
 
@@ -120,7 +132,7 @@ Unity CLI command semantics は、Unity 公式の次を優先して再確認し�
 - Unity Docs: `Unity Pipeline package`
 - GitHub: `Unity-Technologies/skills/skills/unity-cli`
 
-## 6. なぜ AGENTS.md に command catalog を全部入れないか
+## 7. なぜ AGENTS.md に command catalog を全部入れないか
 
 Unity CLI は experimental で、installed version によって command/flag が増減し得る。さらに `unity command` は project の Pipeline package と custom `[CliCommand]` によって動的に変わる。
 

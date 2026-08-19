@@ -4,6 +4,8 @@
 
 この snapshot で採用した規則は、単なる提案ではなく「作者の意図として真」として扱う。新しい反証がコード、Asset、テストから得られない限り、AI は一般的なベストプラクティスへ置き換えず、このプロファイルを再現する。
 
+ただし、一ゲーム実装後のレビューで追加された **Prefab-first / instance-scoped MVP / short comments / no magic numbers / error-log policy** は project-wide correction であり、旧コード evidence より優先する。これらに反する旧実装は新規コードの exemplar として模倣しない。
+
 ## 読み順
 
 1. [`coding-style.md`](coding-style.md) — 判断規則と実装テンプレート。
@@ -20,6 +22,7 @@
 - テスト: `Assets/Editor`
 - 設定 Asset: `Assets/!lumirr/object/scritableObjects`
 - DI authoring: `Assets/!lumirr/scripts/VContainer` と対応 Prefab
+- runtime object/UI Prefab: `Assets/!MyAssets/Object/Prefab` の既存 grouping/naming
 
 新規ゲームコードでは `scripts` の規則を優先する。`RaruLib` の既存ファイルを局所修正するときだけ、そのファイルの古い局所スタイルを優先する。
 

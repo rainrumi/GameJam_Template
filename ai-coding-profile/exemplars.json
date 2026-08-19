@@ -1,7 +1,7 @@
 {
-  "version": 1,
+  "version": 2,
   "project": "NuiIndicator",
-  "selectionRule": "Read the nearest matching exemplar before implementing; preserve its local API vocabulary and lifecycle.",
+  "selectionRule": "Apply project-wide corrections first, then read the nearest matching exemplar; preserve local API vocabulary/lifecycle only where it does not conflict with Prefab-first, instance-scoped MVP, short comments, no-magic-number, or error/logging rules.",
   "exemplars": [
     {
       "topic": "composition_root",
@@ -45,7 +45,8 @@
         "public Observable exposure",
         "no notification for same state",
         "IDisposable cleanup"
-      ]
+      ],
+      "warning": "Use as an R3 ownership exemplar only; it does not override the instance-scoped MVP boundary."
     },
     {
       "topic": "long_async_orchestration",
@@ -60,7 +61,8 @@
         "linked cancellation",
         "expected cancellation filters",
         "finally-based runtime state restoration"
-      ]
+      ],
+      "warning": "Copy cancellation, sequencing and restoration patterns only. Do not copy game-wide responsibility placement into instance-specific features."
     },
     {
       "topic": "status_and_runtime_override",
@@ -144,5 +146,13 @@
       ],
       "warning": "Preserve local legacy shape; do not use it as the default for new game code."
     }
+  ],
+  "projectWideCorrections": [
+    "Prefab-first runtime gameplay/UI authoring under Assets/!MyAssets/Object/Prefab",
+    "Independent runtime instances own independent Model/Presenter state and lifetime",
+    "GameLoop* is game-wide orchestration only",
+    "Short method/variable comments with the prescribed placement",
+    "No production magic numbers; instance numeric values come from *Info / existing *StatusInfo",
+    "No InvalidOperationException outside tests; Unity-dependent Debug.Log is UNITY_EDITOR guarded"
   ]
 }

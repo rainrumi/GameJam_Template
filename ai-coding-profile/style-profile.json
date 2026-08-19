@@ -1,10 +1,10 @@
 {
   "$schema": "./style-profile.schema.json",
-  "profileVersion": 1,
+  "profileVersion": 2,
   "project": "NuiIndicator",
   "language": "C#",
   "interpretationMode": "strict_author_style_replication",
-  "assumptionPolicy": "Treat recorded rules as true author intent until contradicted by nearer project evidence.",
+  "assumptionPolicy": "Project-wide corrections from implementation review override conflicting older exemplars; otherwise treat recorded rules as author intent until contradicted by nearer evidence.",
   "snapshot": {
     "date": "2026-08-14",
     "unityVersion": "6000.3.12f1",
@@ -31,13 +31,14 @@
     }
   },
   "priority": [
+    "project-wide corrections: prefab-first, instance-scoped MVP, short comments, no magic numbers, error/logging policy",
     "nearest_existing_feature",
     "Assets/!lumirr/scripts conventions",
     "this_profile",
     "Assets/!lumirr/RaruLib/src legacy conventions"
   ],
   "architecture": {
-    "default": "MVP",
+    "default": "instance-scoped MVP",
     "compositionRoot": "VContainer LifetimeScope",
     "rules": [
       {
@@ -63,6 +64,24 @@
         "strength": "required",
         "confidence": "high",
         "instruction": "Register Views with RegisterComponent, status assets with RegisterInstance, Models with Register<T>, and Presenters with RegisterEntryPoint."
+      },
+      {
+        "id": "arch.instance_scope",
+        "strength": "required",
+        "confidence": "high",
+        "instruction": "Each independently spawned gameplay object or interactive UI instance owns independent Model and Presenter state/lifetime; class definitions may be shared but mutable runtime instances are not."
+      },
+      {
+        "id": "arch.gameloop_boundary",
+        "strength": "required",
+        "confidence": "high",
+        "instruction": "Keep GameLoop* limited to game-wide phase/orchestration; move per-instance movement, state, collision, input reaction and UI behavior into the instance MVP."
+      },
+      {
+        "id": "arch.prefab_first",
+        "strength": "required",
+        "confidence": "high",
+        "instruction": "Runtime gameplay objects and interactive UI use Prefabs under the existing Assets/!MyAssets/Object/Prefab grouping; do not script-build or runtime-repair concerns that can be authored in Prefab."
       }
     ]
   },
@@ -97,6 +116,12 @@
         "shape": "private readonly Subject<T>, public Observable<T>, CompositeDisposable ownership",
         "strength": "preferred",
         "confidence": "high"
+      },
+      {
+        "name": "instance_numeric_info",
+        "shape": "Gameplay/UI numeric values come from the runtime instance *Info or the existing *StatusInfo serving that role; behavior code contains no magic numbers.",
+        "strength": "required",
+        "confidence": "high"
       }
     ]
   },
@@ -118,7 +143,13 @@
     "protectedFields": "_camelCase",
     "publicMembers": "PascalCase",
     "localsAndParameters": "camelCase",
-    "booleanPrefixes": ["Is", "Can", "Has", "was", "is"],
+    "booleanPrefixes": [
+      "Is",
+      "Can",
+      "Has",
+      "was",
+      "is"
+    ],
     "asyncSuffix": "Async",
     "suffixVocabulary": [
       "Model",
@@ -172,18 +203,20 @@
     "preferExpressionBodiedReadOnlyProperties": true,
     "preferGuardClauses": true,
     "regions": false,
-    "floatLiteralExamples": ["0.0f", "1.0f", "0.5f"]
+    "numericLiteralPolicy": "No magic numbers in production behavior code; instance-specific numeric values come from *Info / existing *StatusInfo."
   },
   "comments": {
-    "language": "Japanese",
-    "preserveEnglishFor": ["API names", "type names", "technical terms"],
-    "lineCommentStyle": "Short action or calculation-stage phrase immediately before the relevant statement.",
-    "xmlSummaryUse": "Public contracts, lifecycle ownership, non-obvious state changes and compatibility behavior.",
+    "language": "Japanese with English API/type/technical terms",
+    "length": "approximately 1-15 characters for normal method/variable comments",
+    "classField": "trailing end-of-line comment",
+    "method": "preceding line comment",
+    "localAndLoopVariable": "preceding line comment",
+    "xmlSummaryUse": "Preserve existing summaries when unrelated; do not add long summaries mechanically to new/changed code.",
     "avoid": [
       "new mojibake",
       "large commented-out implementations",
       "bare TODO or FIXME",
-      "comments that merely restate assignment syntax"
+      "routine comments longer than 15 characters when naming/responsibility can be improved"
     ]
   },
   "testing": {
@@ -194,7 +227,10 @@
     "lifecycleAndDestroy": "UnityTest",
     "testDoubles": "private sealed nested Stub implementing the production interface",
     "unityCleanup": "try/finally and Object.DestroyImmediate",
-    "serializedReferenceSetup": ["SerializedObject", "small reflection helper when cross-cutting"]
+    "serializedReferenceSetup": [
+      "SerializedObject",
+      "small reflection helper when cross-cutting"
+    ]
   },
   "doNotIntroduce": [
     "a second architecture beside existing MVP",
@@ -205,7 +241,13 @@
     "bulk rename of serialized fields, PlayerPrefs keys, enum members or compatibility typos",
     "new namespace in Assets/!lumirr/scripts without a project-wide decision",
     "file-scoped namespace",
-    "unrelated formatting"
+    "unrelated formatting",
+    "runtime gameplay/UI GameObject construction without a Prefab source",
+    "Prefab-authorable hierarchy/layout/visual/component repair in Script",
+    "per-instance responsibility concentrated into GameLoop*",
+    "magic numbers in production behavior code",
+    "InvalidOperationException outside test scripts",
+    "production Debug.Log outside UNITY_EDITOR guards"
   ],
   "evidenceFiles": [
     "Assets/!lumirr/scripts/VContainer/GameLifetimeScope.cs",
@@ -222,5 +264,19 @@
     "Assets/Editor/NaviModelTests.cs",
     "Assets/Editor/AsyncCancellationTests.cs"
   ],
-  "exemplarIndex": "./exemplars.json"
+  "exemplarIndex": "./exemplars.json",
+  "runtimeAuthoring": {
+    "prefabRoot": "Assets/!MyAssets/Object/Prefab",
+    "prefabFirst": true,
+    "rules": [
+      "Inspect and follow existing folder grouping/naming before adding Prefabs.",
+      "Do not use new GameObject, runtime AddComponent, or script-built UI when Prefab authoring can express the result.",
+      "Do not repair Prefab-authorable hierarchy, layout, visual, component or serialized-reference concerns in runtime code."
+    ]
+  },
+  "errorHandling": {
+    "invalidOperationException": "Allowed only in test scripts.",
+    "model": "For expected errors use return, false, no-op, or existing Try-style result; do not depend on Unity logging.",
+    "unityDependent": "Use Debug.Log when logging is needed, and wrap every production call in #if UNITY_EDITOR / #endif."
+  }
 }

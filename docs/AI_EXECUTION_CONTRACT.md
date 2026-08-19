@@ -83,6 +83,8 @@ baseline を取れない場合は、その事実を後で「pre-existing と断�
 | Presenter subscription | EditMode/UnityTest + dispose path |
 | View async lifetime | PlayMode/UnityTest + runtime error absence |
 | SerializeField追加 | live Inspector/Prefab wiring + compile + runtime |
+| Runtime instance / UI追加 | Prefab path/source + live instance inspection + compile + runtime |
+| Instance MVP変更 | targeted test + two-instance state/lifetime isolation + runtime |
 | Scene hierarchy変更 | live hierarchy query + save + reopen/runtime |
 | package変更 | dependency resolution + compile + tests |
 | build設定 | `unity build` artifact |
@@ -93,9 +95,13 @@ baseline を取れない場合は、その事実を後で「pre-existing と断�
 
 - 変更は依頼された behavior に限定する。
 - 既存 API / serialized data を守る。
-- Scene/Prefab/Asset authoring は接続 Editor を優先する。
+- Scene/Prefab/Asset authoring は接続 Editor を優先する。runtime gameplay object / interactive UI は `Assets/!MyAssets/Object/Prefab` の既存規則へ従う Prefab を source of truth にする。
 - production source は repository file として変更する。`eval` は永続実装の代替にしない。
-- profile の naming、format、comments、MVP、VContainer、R3、UniTask、Data/DataPack を再現する。
+- profile の naming、format、instance-scoped MVP、VContainer、R3、UniTask、Data/DataPack を再現する。
+- Prefab で解決できる hierarchy / layout / visual / component setting を Script で runtime repair しない。
+- `GameLoop*` は game-wide orchestration に限定し、instance behavior/state を集約しない。
+- changed method / variable の短い comment、production magic number 不在、error/logging policy を source review する。
+- test 外 `InvalidOperationException` を禁止し、Model は return/no-op、Unity-dependent logging は editor-only `Debug.Log` とする。
 
 ## Phase 4 — Load
 

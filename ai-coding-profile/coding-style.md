@@ -4,7 +4,7 @@
 
 ## 1. 最初に採用する設計
 
-ゲーム機能は、基本的に機能フォルダの中で `Model`、`Presenter`、`View` に分ける。
+ゲーム機能は、基本的に機能フォルダの中で `Model`、`Presenter`、`View` に分ける。さらに gameplay object / interactive UI は **runtime instance ごとに独立した MVP state/lifetime** を持たせる。同じ class を複数 instance で再利用してよいが、mutable Model / Presenter instance を共有しない。
 
 ```text
 <Feature>/
@@ -19,6 +19,13 @@
 ```
 
 実在する綴り `Scritable` と `scritableObjects` は、既存フォルダとの連続性を保つためそのまま使う。新しい別綴りの並行フォルダを作らない。
+
+### Instance / GameLoop boundary
+
+- player、enemy、bullet、item、obstacle、stateful list item、interactive panel 等、独立して生成・破棄される単位に MVP を割り当てる。
+- `GameLoop*` は game-wide phase、start/end、spawn/despawn request、aggregate result だけを担当する。
+- movement、HP、collision、individual UI state、individual input reaction を `GameLoop*` へ集約しない。
+- instance Model / Presenter は Singleton にせず、その Prefab instance と同じ lifetime で破棄される形を使う。
 
 ### Model
 
@@ -57,7 +64,7 @@
 
 ### 設定値
 
-調整値は `ScriptableObject` の `<Feature>ConstStatusInfo` または `<Feature>InitializeStatusInfo` に置く。
+調整値は `ScriptableObject` の `<Feature>ConstStatusInfo` または `<Feature>InitializeStatusInfo` に置く。runtime instance 固有の数値は、その instance の `*Info` に集約する。既存 `*StatusInfo` が同じ役割なら重複する `*Info` を作らず、その class を利用する。
 
 ```csharp
 [CreateAssetMenu(
@@ -174,58 +181,70 @@ Model は `GetDataPack()` を作り、Presenter は DataPack を受け取って 
 - 小さな get-only property は expression-bodied member にする。
 - guard clause と早期 return を使い、深いネストを避ける。
 - 1行 `if (...) return;` は単純な guard で既存コードにあるが、新規の複雑な副作用は braces 付きにする。
-- float literal は `0.0f`, `1.0f` のように型を明示する書き方を優先する。
+- `*Info` / test 等、numeric literal が許される箇所では `0.0f`, `1.0f` のように型を明示する。production behavior code の magic number 禁止を優先する。
 - 関連する小型 `Data` / `DataPack` / enum は主要 class と同じファイルに置いてよい。再利用境界の interface は専用ファイルへ分ける。
 - `#region` は使わない。大きな既存ファイルでは `/********/` separator があるが、新規では責務分割を優先する。
 
 ## 6. コメントの書き方
 
-コメントは日本語で書く。型名、API 名、技術語は英語表記を保持する。
+新規・変更コードでは、method と variable に **1〜15文字程度**の短いコメントを付ける。日本語を基本とし、API 名・型名・technical term は英単語を維持する。
 
-### 行コメント
+### 配置
 
-長い orchestration や計算では、直後の処理を短い名詞句・動作句で説明する。
-
-```csharp
-// ナビの表示
-_naviView.VisibleNavi();
-
-// 対象物の回転速度を線速度に変換
-float surfaceSpeed = ...;
-```
-
-「代入する」の逐語説明ではなく、ゲーム上の意味、計算の段階、復元理由を書く。非自明な互換処理は「既存の利用方法も維持する」のように理由まで書く。
-
-### XML summary
-
-公開契約、寿命、非自明な状態遷移には 1～2 文の日本語 summary を付ける。単純な getter や自明な private method には付けない。
+- class field / class variable: 宣言行の末尾へ文末コメント。
+- method: declaration の直前へ行コメント。
+- local / loop variable: declaration / loop statement の直前へ行コメント。
 
 ```csharp
-/// <summary>
-/// 全Itemへ同じタイミングで位置リセットを通知する。
-/// </summary>
-public sealed class ItemResetSignal : IDisposable
+[SerializeField] private EnemyInfo _enemyInfo; // 敵設定
+
+// 移動更新
+public void Move()
+{
+    // 移動距離
+    float moveDistance = _enemyInfo.MoveDistance;
+}
 ```
+
+短い名詞句・動作句を使う。説明が長くなる場合は、名前と責務分割を先に改善する。既存 XML summary は無関係な変更で削除しないが、新規箇所へ長い summary を機械的に追加しない。
 
 ### 避けるもの
 
 - 新しい文字化けコメント。
 - コメントアウトした大きな旧実装。
 - TODO/FIXME だけを残すこと。
-- すべての行への過剰な説明。
-- 既存の typo を理由なく嘲笑・修正するコメント。
+- 16文字以上の説明を通常コメントとして連発すること。
 
 既存の文字化けコメントは無関係な変更で触れない。対象行を実際に変更する場合のみ、意図を確認できる範囲で UTF-8 の日本語へ置き換える。
 
-## 7. エラー処理と null
+## 7. マジックナンバー
 
-- Model の public 境界で必須引数が null なら `ArgumentNullException`、範囲が不正なら `ArgumentOutOfRangeException` を投げる。
-- 同一状態の再設定など正常な no-op は `false` を返すか早期 return する。
-- 必須 Inspector 参照の欠落を `?.` や実行時検索で隠さない。
+production behavior code では magic number を禁止する。gameplay / UI behavior に意味を持つ numeric value は、その instance の `*Info` から取得する。
+
+- speed、duration、distance、count、threshold、alpha、scale、offset、score、interval 等を Model / View / Presenter / GameLoop に直接書かない。
+- numeric literal を `const` / `static readonly` に移しただけでは解決としない。instance authoring value は `*Info` / status Asset へ置く。
+- 既存 `*ConstStatusInfo` / `*InitializeStatusInfo` が該当 instance の設定源なら、そこへ field/property を追加する。
+- test fixture は意味のある名前へ束縛し、production tuning 値とは分離する。
+- tweet 文面や `$"{index}ポイント"` 等の string / string interpolation は source に直接書いてよい。
+
+## 8. エラー処理と logging
+
+- test 系 script 外で `InvalidOperationException` を使用しない。
+- production Model / Pure C# game logic は expected error で throw せず、return / `false` / no-op / 既存 `Try...` 形で処理する。
+- Model は `UnityEngine.Debug` に依存しない。
+- View、Presenter、その他 Unity-dependent script で error を log する場合は `Debug.Log` を使用する。
+- `Debug.Log` は必ず `#if UNITY_EDITOR` / `#endif` で囲む。
+
+```csharp
+#if UNITY_EDITOR
+UnityEngine.Debug.Log("状態不正");
+#endif
+```
+
+- required Inspector reference の欠落を `?.`、runtime `Find*`、`AddComponent`、auto-generation で隠さない。Prefab / Inspector を修正する。
 - Unity object の destroy 競合だけは Unity null semantics を考慮する。
-- `Debug.Log` を恒常的な制御フローにしない。例外 message には期待値と対象を含める。
 
-## 8. テストの書き方
+## 9. テストの書き方
 
 - Pure C# は EditMode `[Test]`、Unity lifecycle や destroy 中 await は `[UnityTest]`。
 - test 名は `Method_Condition_ExpectedResult`。
@@ -236,20 +255,28 @@ public sealed class ItemResetSignal : IDisposable
 - float は `Within`、vector/state は `Is.EqualTo`、collection は `Has.Count` を使う。
 - 乱数ロジックは同 seed の決定性と境界を検証する。
 
-## 9. 新規機能の実装順
+## 10. 新規機能の実装順
 
-1. 機能に最も近い既存 Model/Presenter/View を選ぶ。
-2. `I*Status` と ScriptableObject が必要か決める。
-3. Pure C# の `Data` / `DataPack` / Model を作る。
-4. Unity API だけを扱う View を作る。
-5. Presenter で接続し、R3 購読と cancellation の所有者を決める。
-6. LifetimeScope へ既存の並びで登録する。
-7. Prefab/Scene の SerializeField を Unity Editor で割り当てる。
-8. 最も近い EditMode/PlayMode test を追加する。
-9. compile、Console、test、必要な runtime 導線を確認する。
+1. `Assets/!MyAssets/Object/Prefab` の既存 grouping / naming を確認し、対象 instance の Prefab location を決める。
+2. 機能に最も近い既存 Model/Presenter/View を選ぶ。ただし `GameLoop*` 集中型の旧実装は instance responsibility の exemplar にしない。
+3. runtime instance ごとの MVP boundary と lifetime を決める。
+4. instance 数値設定を収める `*Info` / 既存 `*StatusInfo` を決める。
+5. Pure C# の `Data` / `DataPack` / Model を作る。
+6. Prefab authoring と Unity API だけを扱う View を作る。
+7. Presenter で instance 内を接続し、R3 購読と cancellation の ownership を決める。
+8. VContainer へ instance state が共有されない lifetime で登録する。
+9. Prefab/Scene の SerializeField を Unity Editor で割り当てる。Prefab で解決できる layout/visual/component 設定を Script に書かない。
+10. method / variable の短い comment、magic number、logging policy を source review する。
+11. 最も近い EditMode/PlayMode test を追加する。
+12. compile、Console、test、Prefab source、複数 instance の state isolation、必要な runtime 導線を確認する。
 
-## 10. AI 向け禁止事項
+## 11. AI 向け禁止事項
 
+- gameplay object / interactive UI を Prefab なしで runtime construction しない。
+- Prefab で変更できる hierarchy / layout / visual / component setting を Script で hard-code / repair しない。
+- instance-specific responsibility を `GameLoop*` に集約しない。
+- production behavior code に magic number を書かない。
+- test script 外で `InvalidOperationException` を投げない。
 - 「一般的に綺麗」という理由だけで namespace、asmdef、record、DI abstraction、Manager を導入しない。
 - MVP を別 architecture に置換しない。
 - `Data` / `DataPack` を DTO library や mapper framework に置換しない。
@@ -259,7 +286,7 @@ public sealed class ItemResetSignal : IDisposable
 - 作者の既存コード全体を formatter で均一化しない。
 - テストだけ新しい命名流派にしない。
 
-## 11. 最小テンプレート
+## 12. 最小テンプレート
 
 ```csharp
 using System;
@@ -269,6 +296,7 @@ public readonly struct SampleDataPack
 {
     public float Value { get; }
 
+    // data作成
     public SampleDataPack(float value)
     {
         Value = value;
@@ -277,17 +305,19 @@ public readonly struct SampleDataPack
 
 public sealed class SampleModel : IDisposable
 {
-    private readonly ISampleConstStatus _status;
-    private readonly Subject<SampleDataPack> _changed = new();
-    private float _value;
+    private readonly ISampleConstStatus _status; // 設定値
+    private readonly Subject<SampleDataPack> _changed = new(); // 変更通知
+    private float _value; // 現在値
 
     public Observable<SampleDataPack> Changed => _changed;
 
+    // Model作成
     public SampleModel(ISampleConstStatus status)
     {
-        _status = status ?? throw new ArgumentNullException(nameof(status));
+        _status = status;
     }
 
+    // 値変更
     public bool ChangeValue(float value)
     {
         if (_value == value)
@@ -300,11 +330,13 @@ public sealed class SampleModel : IDisposable
         return true;
     }
 
+    // data取得
     public SampleDataPack GetDataPack()
     {
         return new SampleDataPack(_value);
     }
 
+    // 通知破棄
     public void Dispose()
     {
         _changed.Dispose();

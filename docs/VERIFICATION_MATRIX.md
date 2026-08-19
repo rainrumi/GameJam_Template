@@ -12,7 +12,12 @@
 | View code | Unity compile/load | View test where practical | target Scene in Play Mode or project verification command |
 | SerializeField added/changed | Unity compile/load | serialized setup test where practical | live Inspector/Prefab wiring + missing reference absence |
 | Scene hierarchy | Unity reload | existing scene test if any | live hierarchy query + save + runtime observation |
-| Prefab structure | Unity reload | prefab test if any | live Prefab/instance inspection + save + usage path |
+| Prefab structure | Unity reload | prefab test if any | live Prefab/instance inspection + path/source check + save + usage path |
+| Runtime gameplay/UI instance | Unity compile/load | relevant instance test where practical | Prefab source under existing `Assets/!MyAssets/Object/Prefab` grouping; no script-built substitute |
+| Instance-scoped MVP | Unity compile/load | state isolation / dispose test where practical | observe at least two instances and confirm mutable Model/Presenter state/lifetime is not shared |
+| GameLoop responsibility change | Unity compile/load | orchestration test | confirm instance movement/state/UI responsibility remains in instance MVP |
+| Numeric tuning/config | Unity compile/load | Model test through `*Info` / status interface | changed behavior uses authored Info/Asset value; no production magic number |
+| Error/logging path | Unity compile/load | targeted failure-path test | no production `InvalidOperationException`; Unity-dependent `Debug.Log` is Editor-guarded |
 | ScriptableObject config | Unity import/load | Model test through status interface | actual Asset assignment/value query if relevant |
 | LifetimeScope registration | Unity compile/load | resolve/integration test where available | Scene startup without DI resolution failure |
 | Package/manifest | package resolution + Unity compile | relevant suites | Editor/package availability query |
@@ -49,6 +54,16 @@ runtime evidence は変更した behavior の観察である。
 - `GameState` が期待状態へ遷移し、Presenter の購読が 1 回だけ発火した。
 - destroy 中の async flow が cancellation され、temporary interaction state が `finally` で復元された。
 - added SerializeField が target Prefab に割り当てられ、Play Mode で missing reference exception が発生しなかった。
+
+## Source compliance
+
+変更した production source は Unity 実行前に次を確認する。
+
+- class field は短い文末コメント、method / local / loop variable は 1〜15文字程度の行コメントを持つ。
+- gameplay/UI の意味を持つ numeric value は instance `*Info` / existing `*StatusInfo` から取得し、behavior code に magic number を置かない。
+- test script 外に `InvalidOperationException` がない。
+- production `Debug.Log` がすべて `#if UNITY_EDITOR` / `#endif` 内にある。
+- Prefab で authoring 可能な hierarchy/layout/visual/component concern を runtime code が生成・repair していない。
 
 ## Risk escalation
 

@@ -14,7 +14,7 @@ Do not stop at file edits. Implement, load in Unity, test, verify runtime behavi
 1. Read applicable `AGENTS.md`.
 2. If a plan exists, read its goal, implementation TODOs, verification TODOs, assumptions, and risks.
 3. Read the nearest exemplar from `ai-coding-profile/exemplars.json`.
-4. Read enough surrounding code, tests, LifetimeScope, status Asset, Scene/Prefab context to understand the local contract.
+4. Read enough surrounding code, tests, LifetimeScope, status Asset, Scene/Prefab context, and `Assets/!MyAssets/Object/Prefab` grouping to understand the local contract.
 5. Keep unrelated user changes intact.
 
 ## 2. Preflight Unity CLI
@@ -43,21 +43,36 @@ If an Editor appears to be running but command discovery fails, diagnose Safe Mo
 
 Follow `AGENTS.md` and the profile exactly:
 
-- MVP + VContainer.
-- Model/Presenter are Pure C# where the local feature follows that architecture; View owns Unity API/Inspector work.
-- status interface + ScriptableObject boundary.
+- Instance-scoped MVP + VContainer. Each independently spawned gameplay object / interactive UI gets independent Model/Presenter state; GameLoop stays game-wide orchestration only.
+- Model is Pure C#; Presenter remains non-MonoBehaviour and owns orchestration. Presenter may use editor-only `UnityEngine.Debug.Log` only under the required `UNITY_EDITOR` guard. View owns Unity API/Inspector work.
+- Prefab-first runtime objects/UI under the existing `Assets/!MyAssets/Object/Prefab` grouping. Prefab-authorable hierarchy/layout/visual/component concerns stay in Prefab/Inspector.
+- status interface + ScriptableObject boundary; instance numeric values live in the corresponding `*Info` / existing `*StatusInfo`.
 - mutable `Data` + get-only `DataPack` + `GetDataPack()`.
 - R3 ownership/disposal.
 - UniTask + CancellationToken + lifetime restoration.
-- author naming/format/comment conventions.
+- author naming/format conventions plus short comments: class fields use trailing comments; methods and local/loop variables use preceding line comments, about 1–15 characters.
 - compatibility typos and serialized vocabulary are preserved.
 - no runtime `Find*` as DI, no new global Manager, no unrelated namespace/asmdef/formatter change.
+- no production magic numbers; do not replace them with local constants when the value belongs to instance `*Info`.
+- no `InvalidOperationException` outside tests. Model error paths return/no-op; View/Presenter/Unity-dependent logging uses `Debug.Log` wrapped in `#if UNITY_EDITOR`.
 
-For Scene/Prefab/Asset changes, use the connected Editor/Pipeline when available. Do not raw-edit Unity YAML while a reachable Editor can perform the authoring.
+For Scene/Prefab/Asset changes, use the connected Editor/Pipeline when available. Do not raw-edit Unity YAML while a reachable Editor can perform the authoring. Do not runtime-create or runtime-repair a GameObject/UI when the same result belongs in a Prefab.
 
 Use `eval` only for transient diagnostics/observation; persistent implementation belongs in repository source/assets.
 
-## 4. Verify in layers
+## 4. Source compliance check
+
+Before Unity verification, inspect changed production code and confirm:
+
+- every runtime gameplay object / interactive UI has a Prefab source in the expected `Assets/!MyAssets/Object/Prefab` grouping;
+- instance-specific behavior/state is not newly concentrated into `GameLoop*`;
+- spawned instances do not share mutable Model/Presenter state;
+- changed methods and variables follow the short comment placement rule;
+- gameplay/UI numeric values are read from instance `*Info` / existing `*StatusInfo`, not embedded as magic numbers;
+- `InvalidOperationException` appears only in test code;
+- each production `Debug.Log` is inside `#if UNITY_EDITOR` / `#endif`.
+
+## 5. Verify in layers
 
 Use `docs/VERIFICATION_MATRIX.md` to choose mandatory gates.
 
@@ -93,13 +108,15 @@ A successful Play Mode transition alone is not sufficient evidence.
 
 If authoring changed:
 
+- confirm the actual instance has the intended Prefab source and that the Prefab is stored under the existing `Assets/!MyAssets/Object/Prefab` convention;
 - inspect actual hierarchy/component/reference state;
 - save via Editor;
 - confirm serialized references are assigned;
 - if important, re-open/reload and confirm persistence;
-- run the usage path.
+- run the usage path;
+- when instance MVP changed, create/observe at least two instances when practical and confirm mutable state/lifetime is isolated.
 
-## 5. Failure loop
+## 6. Failure loop
 
 For any relevant failure:
 
@@ -111,7 +128,7 @@ For any relevant failure:
 
 Do not hide required-reference failures with defensive null checks just to make the test green.
 
-## 6. Report
+## 7. Report
 
 Use exactly one status:
 

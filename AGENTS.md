@@ -23,6 +23,14 @@
 
 `ai-coding-profile` は `strict_author_style_replication` として扱う。一般論で「より綺麗」に置き換えない。新しい反証が対象機能の実装、Asset、Test から得られた場合だけ、より近い実証を優先する。
 
+ただし、今回の実装後レビューで追加された次の規則は **project-wide correction** として扱う。ユーザーが今回明示的に上書きしない限り、nested `AGENTS.md`、古い exemplar、近傍コードはこれらを弱められず、新規・変更コードでは反する旧実装を模倣しない。
+
+- runtime に出現する gameplay object / interactive UI は Prefab-first で管理する。
+- independently spawned instance は instance-scoped MVP を持ち、`GameLoop*` に instance responsibility を集中させない。
+- 新規・変更コードの method / variable には指定形式の短いコメントを付ける。
+- production logic に magic number を置かず、instance-specific numeric value はその instance の `*Info` へ移す。
+- test script 外で `InvalidOperationException` を使わず、Model と Unity-dependent layer で定めた error policy に従う。
+
 プロファイルの snapshot に記載された Unity version は観測時点の情報であり、現在の必須 version と決めつけない。実作業では `ProjectSettings/ProjectVersion.txt` を読む。
 
 ---
@@ -140,9 +148,17 @@ Safe Mode 中は Pipeline package が load されない前提で扱う。接続�
 
 ## 4. コーディング方法 — ai-coding-profile の再現
 
-### 4.1 Architecture: MVP + VContainer
+### 4.1 Architecture: instance-scoped MVP + VContainer
 
-新規ゲーム機能は、対象領域に反証がない限り MVP を採用する。
+新規ゲーム機能は MVP を採用し、**gameplay object / interactive UI の runtime instance ごとに Model / View / Presenter の runtime instance を分離する**。同じ型の Prefab が複数 spawn される場合、class 定義は共有してよいが、mutable Model state と Presenter lifetime を instance 間で共有しない。
+
+#### Instance boundary
+
+- player、enemy、bullet、item、obstacle、stateful list item、interactive panel 等、独立して生成・破棄・状態変更される単位は、それぞれ instance-scoped MVP を持つ。
+- purely visual な child、icon、decoration 等、独立した state / interaction を持たない Prefab 内部要素は親 View の authoring structure として扱い、無理に別 MVP を作らない。
+- instance 用 Model / Presenter を global `Singleton` にしない。VContainer の scope / factory / child scope は、各 instance の lifetime と state が分離される形を選ぶ。
+- `GameLoop*` は game-wide phase、開始/終了、spawn/despawn request、aggregate result 等の全体 orchestration に限定する。movement、HP、collision judgement、individual UI state、individual input reaction 等の instance responsibility を `GameLoop*` に集約しない。
+- 新しい responsibility を `GameLoopModel` / `GameLoopPresenter` / `GameLoopView` に追加する前に「特定 instance の MVP に置けないか」を先に判定する。置ける場合は instance 側へ置く。
 
 #### Model
 
@@ -184,9 +200,9 @@ VContainer `LifetimeScope` を composition root とする。
 - Service Locator、runtime `Find*` を DI の代替として導入しない。
 - 新しい global singleton / `Manager` を局所的な都合で追加しない。
 
-### 4.2 Data / Status
+### 4.2 Data / Status / Info
 
-設定値は既存語彙に合わせて `I<Feature>Status` と `<Feature>ConstStatusInfo` / `<Feature>InitializeStatusInfo` の境界を使う。
+設定値は既存語彙に合わせて `I<Feature>Status` と `<Feature>ConstStatusInfo` / `<Feature>InitializeStatusInfo` の境界を使う。runtime instance 固有の数値設定は、その instance に対応する `*Info` に集約する。既存の `*StatusInfo` が同じ責務を持つ場合はそれを `*Info` として扱い、重複 class を作らない。
 
 - ScriptableObject は status interface を実装する。
 - Model は concrete ScriptableObject ではなく interface に依存する。
@@ -257,31 +273,54 @@ VContainer `LifetimeScope` を composition root とする。
 - target-typed `new()` は左辺で型が明白な field initialization 等では使用可。
 - 小さな get-only property は expression-bodied member を優先する。
 - guard clause を使い深い nesting を避ける。
-- float literal は `0.0f`, `1.0f`, `0.5f` のように型を明示する形を優先する。
+- `*Info` / test 等、numeric literal を置くこと自体が許される箇所では float literal の型を `0.0f` のように明示する。production behavior code の magic number 禁止を優先する。
 - `#region` は新規導入しない。
 - 関係ない範囲を formatter で一括変更しない。
 
-### 4.8 Comments
+### 4.8 Magic number prohibition
 
-コメントは日本語を基本とし、API 名、型名、technical term は英語表記を維持する。
+production logic に magic number を置かない。gameplay / UI behavior に意味を持つ numeric value は、その runtime instance に対応する `*Info` から取得する。
 
-- 長い orchestration / calculation の直前に、ゲーム上の意味や処理段階を示す短い日本語コメントを置く。
-- public contract、lifecycle ownership、非自明な state transition、compatibility behavior には 1〜2 文の XML `<summary>` を付ける。
-- 自明な getter / private method へ機械的に summary を増やさない。
-- 代入文を言い換えるだけのコメントを書かない。
+- Model / View / Presenter / GameLoop / service 等の behavior code に tunable numeric literal を直接書かない。
+- speed、duration、distance、count、threshold、alpha、scale、offset、score、interval 等は対応する `*Info` field / property にする。
+- 既存 `<Feature>ConstStatusInfo` / `<Feature>InitializeStatusInfo` がその instance の設定源なら、新しい `*Info` を重複作成せずそこへ追加する。
+- `const` / `static readonly` へ numeric literal を移しただけでは、この規則を満たしたことにしない。instance authoring value は `*Info` / Asset / Prefab 側で管理する。
+- test の fixture / expected value は意味のある名前を付け、production tuning value と混同しない。
+- string literal と string interpolation は例外とし、tweet 文面、`$"{index}ポイント"` 等は source に直接書いてよい。
+
+### 4.9 Comments
+
+新規・変更コードでは、**各 method と variable に 1〜15 文字程度の短いコメント**を付ける。日本語を基本とし、API 名、型名、技術語は英単語のまま使用してよい。コメントは説明文ではなく短い名詞句・動作句にする。
+
+- class field / class variable: **文末コメント**。宣言行の末尾へ `// ...` を置く。
+- method: **行コメント**。method declaration の直前行へ `// ...` を置く。
+- local variable / loop variable: **行コメント**。宣言または loop statement の直前行へ `// ...` を置く。
+- 既存 XML `<summary>` は無関係な変更で削除しないが、新規・変更箇所では短い行コメントを標準とし、長い summary を機械的に追加しない。
+- コメント例: `// 移動速度`, `// 敵設定`, `// UI更新`, `// spawn待機`, `// index更新`。
+- 15文字を超える説明が必要な場合は、名前・責務分割を先に改善し、それでも必要な理由説明だけを近接コメントとして追加する。
 - bare `TODO` / `FIXME`、大きな commented-out implementation、新しい mojibake を残さない。
 - 既存 mojibake は無関係な変更で触らない。
 
-### 4.9 Null / error handling
+### 4.10 Null / error / logging
 
-- Model の public boundary で必須引数が null なら `ArgumentNullException`、範囲不正なら `ArgumentOutOfRangeException` を使う。
-- 正常な same-state / no-op は `false` または early return で表現してよい。
-- required SerializeField の欠落を `?.`、silent return、runtime search、fallback auto-generation で隠さない。
+- **test 系 script 外では `throw new System.InvalidOperationException` / `throw new InvalidOperationException` を使用しない。**
+- production Model / Pure C# game logic は expected invalid state や入力不整合で例外を投げない。`return`、`false`、no-op、既存の `Try...` 形など、その API の既存戻り値で処理する。
+- Model は Unity logging に依存させない。error state を log するためだけに `UnityEngine` を参照しない。
+- View、Presenter、その他 Unity に依存する production script で error を観測可能にする必要がある場合は `Debug.Log` を使用する。
+- production の `Debug.Log` は必ず次の形で Editor 限定にする。
+
+```csharp
+#if UNITY_EDITOR
+UnityEngine.Debug.Log("...");
+#endif
+```
+
+- `Debug.Log` を恒常的な control flow や状態遷移条件として使わない。log 後の処理は明示的な return / continuation rule に従う。
+- required SerializeField の欠落を runtime `Find*`、`AddComponent`、自動生成で repair しない。Prefab / Inspector authoring で修正する。
 - Unity object destroy race では Unity null semantics を考慮する。
-- `Debug.Log` を恒常的な control flow にしない。
-- exception message には期待値と対象を含める。
+- test script では failure contract の検証に必要な `InvalidOperationException` を使用してよい。
 
-### 4.10 Test style
+### 4.11 Test style
 
 - Pure C# logic: EditMode `[Test]`。
 - Unity lifecycle / destroy 中 await 等: `[UnityTest]`。
@@ -296,11 +335,28 @@ VContainer `LifetimeScope` を composition root とする。
 
 ---
 
-## 5. Unity authoring と runtime generation
+## 5. Unity authoring と Prefab-first runtime generation
+
+### 5.1 Prefab source of truth
+
+- runtime に GameObject / UI instance として出現する gameplay object / interactive UI は **Prefab を source of truth** とする。
+- Prefab は `Assets/!MyAssets/Object/Prefab` 配下へ、既存の folder grouping / naming rule を先に観察し、同じ「まとまり」単位で格納する。規則を推測して新しい並行 taxonomy を作らない。
+- spawn 時は Prefab reference を `Instantiate` / VContainer の既存 prefab factory 等へ渡す。`new GameObject()`、runtime `AddComponent`、script からの UI hierarchy 組み立てを通常実装として使わない。
+- Transform 初期配置、RectTransform anchor、layout、child hierarchy、component 構成、Sprite、Material、Font、default active state、Inspector reference 等、**ユーザーが Prefab を編集すれば解決できる authoring concern を Script で補正しない**。
+- Script は runtime state と behavior の変更だけを担当し、Prefab authoring の不足を自動修復しない。
+- Prefab に持たせるべき設定を `Awake` / `Start` / `OnEnable` で強制上書きしない。runtime specification によって変化する値だけを code から更新する。
+- procedural generation 自体が要件である場合を除き、Prefab を経由しない GameObject/UI generation を新規導入しない。
+
+### 5.2 Instance MVP authoring
+
+- gameplay object / interactive UI Prefab は、対応する View と必要な serialized reference を Prefab 側に保持する。
+- spawn される各 instance に独立した Model / Presenter state を割り当てる。複数 instance が同じ mutable Model / Presenter を共有していないことを authoring / DI で保証する。
+- GameLoop は Prefab を直接細部操作せず、spawn request / phase signal 等の coarse-grained orchestration を行う。instance behavior は各 Presenter へ委譲する。
+
+### 5.3 Authoring safety
 
 - Inspector wiring は契約であり、required reference を runtime repair しない。
 - Scene/Prefab に存在するべき persistent View / UI / anchor / container / management object を `Awake` / `Start` / `OnEnable` で生成・配置・親子付けしない。
-- runtime instantiation は、bullet、enemy、list item、effect 等の量産対象、または仕様上動的生成が本質なものに限定する。
 - SerializeField rename は Prefab/Scene の serialized compatibility を考慮する。必要なら `FormerlySerializedAs` 等の既存方式を検討する。
 
 ---
@@ -340,6 +396,12 @@ unity command --project-path <project-path> --format json
 
 ## 7. 禁止事項
 
+- gameplay object / interactive UI を Prefab source なしで runtime construction しない。
+- Prefab で解決できる hierarchy / layout / visual / component / reference 設定を Script で hard-code / repair しない。
+- instance-specific behavior/state を `GameLoop*` へ集約しない。
+- production behavior code に magic number を書かない。
+- test script 外で `InvalidOperationException` を投げない。
+- production `Debug.Log` を `UNITY_EDITOR` guard 外に置かない。
 - 一般的に綺麗という理由だけで MVP を別 architecture に置換しない。
 - 新しい namespace、asmdef、record、DI abstraction、Manager、global singleton を局所都合で増やさない。
 - `Data` / `DataPack` を別 DTO/mapping framework に置換しない。
